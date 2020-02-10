@@ -31,6 +31,7 @@ import collections
 import colorsys
 import itertools
 import time
+from autoturret import aiming
 
 from edgetpu.detection.engine import DetectionEngine
 
@@ -72,7 +73,7 @@ def make_get_color(color, labels):
 
     return lambda obj_id: 'white'
 
-def overlay(title, objs, get_color, inference_time, inference_rate, layout):
+def overlay(title, objs, get_color, inference_time, inference_rate, layout, gun_angles):
     x0, y0, width, height = layout.window
     font_size = 0.03 * height
 
@@ -116,6 +117,10 @@ def overlay(title, objs, get_color, inference_time, inference_rate, layout):
         'Objects: %d' % len(objs),
         'Inference time: %.2f ms (%.2f fps)' % (inference_time * 1000, 1.0 / inference_time)
     ]
+    if gun_angles:
+        lines.append(
+            'Gun Angles: pan: %.2f, tilt: %.2f' % (gun_angles.pan, gun_angles.tilt)
+        )
 
     for i, line in enumerate(reversed(lines)):
         y = oy2 - i * 1.7 * font_size
@@ -175,10 +180,10 @@ def render_gen(args):
             if args.print:
                 print_results(inference_rate, objs)
 
-            # aiming.run_aiming_pipeline(objs)
+            gun_angles = aiming.run_aiming_pipeline(objs)
 
             title = titles[engine]
-            output = overlay(title, objs, get_color, inference_time, inference_rate, layout)
+            output = overlay(title, objs, get_color, inference_time, inference_rate, layout, gun_angles)
         else:
             output = None
 
