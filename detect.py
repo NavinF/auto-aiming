@@ -173,6 +173,8 @@ def render_gen(args):
             if args.print:
                 print_results(inference_rate, objs)
 
+            aiming.run_aiming_pipeline(objs)
+
             title = titles[engine]
             output = overlay(title, objs, get_color, inference_time, inference_rate, layout)
         else:
