@@ -1,6 +1,7 @@
 """
 Coordinate Systems:
     1. Image coordinates.
+        Top-left is 0,0, increases to right and down.
     2. World coordinate camera (forward is z, up is y, right is x). 
        Physical camera is origin. Directly in front of camera is forward.
 
@@ -30,11 +31,11 @@ def select_target(objects):
     if len(objects) == 0:
         return None
 
-    # For now, just hit middle of face.
+    # For now, just hit middle of face, and one head below.
     target_object = objects[0]
     return Point2D(
         x = target_object.bbox.x + target_object.bbox.w / 2.0,
-        y = target_object.bbox.y + target_object.bbox.h / 2.0
+        y = target_object.bbox.y + target_object.bbox.h * 1.5
     )
 
 
@@ -52,7 +53,7 @@ def image_coordinate_to_world_coordinate_camera(point):
     """
     fov_x = 84
     fov_y = 87.6
-    depth = 3
+    depth = 2
     camera_view_physical_size = Point2D(
         x = 2 * depth * math.tan(math.radians(fov_x / 2.0)),
         y = 2 * depth * math.tan(math.radians(fov_y / 2.0))
@@ -88,7 +89,7 @@ def world_coordinate_camera_to_world_coordinate_gun(point):
     two reference frames 
     """
     gun_coordinate_in_world_coordinate_camera = Point3D(
-        x=0, y=0, z=0
+        x=0, y=0, z=-0.18
     )
     return point + gun_coordinate_in_world_coordinate_camera
 

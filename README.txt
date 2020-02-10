@@ -20,3 +20,4 @@ export TEST_DATA=${HOME}/demo_files
 python3 -m edgetpuvision.detect_server \
   --model ${TEST_DATA}/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
 
+18 cm behind. 10cm below.
