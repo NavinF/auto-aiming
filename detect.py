@@ -31,7 +31,7 @@ import collections
 import colorsys
 import itertools
 import time
-from autoturret import aiming
+from autoturret import controller
 
 from edgetpu.detection.engine import DetectionEngine
 
@@ -73,7 +73,7 @@ def make_get_color(color, labels):
 
     return lambda obj_id: 'white'
 
-def overlay(title, objs, get_color, inference_time, inference_rate, layout, gun_angles):
+def overlay(title, objs, get_color, inference_time, inference_rate, layout, autoturret_render_artifacts):
     x0, y0, width, height = layout.window
     font_size = 0.03 * height
 
@@ -117,10 +117,8 @@ def overlay(title, objs, get_color, inference_time, inference_rate, layout, gun_
         'Objects: %d' % len(objs),
         'Inference time: %.2f ms (%.2f fps)' % (inference_time * 1000, 1.0 / inference_time)
     ]
-    if gun_angles:
-        lines.append(
-            'Gun Angles: pan: %.2f, tilt: %.2f' % (gun_angles.pan, gun_angles.tilt)
-        )
+
+    controller.render(autoturret_render_artifacts, lines)
 
     for i, line in enumerate(reversed(lines)):
         y = oy2 - i * 1.7 * font_size
@@ -180,10 +178,10 @@ def render_gen(args):
             if args.print:
                 print_results(inference_rate, objs)
 
-            gun_angles = aiming.run_aiming_pipeline(objs)
+            autoturret_render_artifacts = controller.run(objs)
 
             title = titles[engine]
-            output = overlay(title, objs, get_color, inference_time, inference_rate, layout, gun_angles)
+            output = overlay(title, objs, get_color, inference_time, inference_rate, layout, autoturret_render_artifacts)
         else:
             output = None
 
@@ -194,7 +192,8 @@ def render_gen(args):
 
 def add_render_gen_args(parser):
     parser.add_argument('--model',
-                        help='.tflite model path', required=True)
+                        help='.tflite model path',
+                        default='autoturret/models/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite')
     parser.add_argument('--labels',
                         help='labels file path')
     parser.add_argument('--top_k', type=int, default=50,

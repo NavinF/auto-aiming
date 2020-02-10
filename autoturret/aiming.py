@@ -52,7 +52,7 @@ def image_coordinate_to_world_coordinate_camera(point):
     """
     fov_x = 84
     fov_y = 87.6
-    depth = 1
+    depth = 3
     camera_view_physical_size = Point2D(
         x = 2 * depth * math.tan(math.radians(fov_x / 2.0)),
         y = 2 * depth * math.tan(math.radians(fov_y / 2.0))
@@ -69,9 +69,10 @@ def image_coordinate_to_world_coordinate_camera(point):
     """
     # Apparently we already get normalized point.
     # Just shift origin to center of image.
+    # Also shift y to point up.
     normalized_point = Point2D(
-        x=point.x-0.5,
-        y=point.y-0.5
+        x=point.x - 0.5,
+        y=(1-point.y) - 0.5
     )
     print("normalized_point: {0}".format(normalized_point))
     world_coordinate_point = Point3D(
