@@ -27,9 +27,9 @@ import time
 
 from edgetpu.classification.engine import ClassificationEngine
 
-from . import svg
-from . import utils
-from .apps import run_app
+from  import svg
+from  import utils
+from apps import run_app
 
 
 CSS_STYLES = str(svg.CssStyle({'.back': svg.Style(fill='black',

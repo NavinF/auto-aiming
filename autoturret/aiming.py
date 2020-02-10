@@ -13,7 +13,7 @@ __all__ = ('run_aiming_pipeline', 'GunAngles')
 
 import math
 import collections
-from .detect import *
+from detect import *
 
 Point2D = collections.namedtuple('Point2D', ('x', 'y'))
 Point3D = collections.namedtuple('Point3D', ('x', 'y', 'z'))

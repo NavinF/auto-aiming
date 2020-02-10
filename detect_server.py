@@ -26,8 +26,8 @@ python3 -m edgetpuvision.detect_server \
   --labels ${TEST_DATA}/coco_labels.txt
 """
 
-from .apps import run_server
-from .detect import add_render_gen_args, render_gen
+from apps import run_server
+from detect import add_render_gen_args, render_gen
 
 def main():
     run_server(add_render_gen_args, render_gen)

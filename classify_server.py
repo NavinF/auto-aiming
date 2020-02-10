@@ -21,8 +21,8 @@ python3 -m edgetpuvision.classify_server \
   --labels ${TEST_DATA}/inat_bird_labels.txt
 """
 
-from .apps import run_server
-from .classify import add_render_gen_args, render_gen
+from apps import run_server
+from classify import add_render_gen_args, render_gen
 
 def main():
     run_server(add_render_gen_args, render_gen)

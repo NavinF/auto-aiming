@@ -34,9 +34,9 @@ import time
 
 from edgetpu.detection.engine import DetectionEngine
 
-from . import svg
-from . import utils
-from .apps import run_app
+import svg
+import utils
+from apps import run_app
 
 CSS_STYLES = str(svg.CssStyle({'.back': svg.Style(fill='black',
                                                   stroke='black',
@@ -173,7 +173,7 @@ def render_gen(args):
             if args.print:
                 print_results(inference_rate, objs)
 
-            aiming.run_aiming_pipeline(objs)
+            # aiming.run_aiming_pipeline(objs)
 
             title = titles[engine]
             output = overlay(title, objs, get_color, inference_time, inference_rate, layout)
