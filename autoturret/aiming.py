@@ -10,16 +10,26 @@ Coordinate Systems:
        match with above unit vector. Ie, same as above, with a translation.
 """
 
-__all__ = ('run_aiming_pipeline', 'GunAngles')
+# __all__ = ('run_aiming_pipeline', 'GunAngles')
 
 import math
 import collections
-from detect import *
+# from detect import *
+from copy import copy
 
 Point2D = collections.namedtuple('Point2D', ('x', 'y'))
 Point3D = collections.namedtuple('Point3D', ('x', 'y', 'z'))
 Point3D.__add__ = lambda self, other: Point3D(self.x + other.x, self.y + other.y, self.z + other.z)
-GunAngles = collections.namedtuple('GunAngles', ('pan', 'tilt'))
+Point3D.__sub__ = lambda self, other: Point3D(self.x - other.x, self.y - other.y, self.z - other.z)
+# GunAngles = collections.namedtuple('GunAngles', ('pan', 'tilt'))
+
+class GunAngles:
+    def __init__(self, pan, tilt):
+        self.pan = pan
+        self.tilt = tilt
+    def __str__(self):
+        return "pan: %.2f, tilt: %.2f" % (self.pan, self.tilt)
+
 
 def select_target(objects):
     """
@@ -75,7 +85,6 @@ def image_coordinate_to_world_coordinate_camera(point):
         x=point.x - 0.5,
         y=(1-point.y) - 0.5
     )
-    print("normalized_point: {0}".format(normalized_point))
     world_coordinate_point = Point3D(
         x=normalized_point.x * camera_view_physical_size.x,
         y=normalized_point.y * camera_view_physical_size.y,
@@ -83,15 +92,40 @@ def image_coordinate_to_world_coordinate_camera(point):
     )
     return world_coordinate_point
 
-def world_coordinate_camera_to_world_coordinate_gun(point):
+def world_coordinate_camera_to_world_coordinate_base(point, current_camera_angles):
     """
     Note: rotations are currently not supported between the
     two reference frames 
     """
-    gun_coordinate_in_world_coordinate_camera = Point3D(
-        x=0, y=0, z=-0.18
+    gun_in_world_coordinate_camera = Point3D(
+        x=0, y=-0.1, z=0.1
     )
-    return point + gun_coordinate_in_world_coordinate_camera
+    # TODO: look up how to do this when tilt is involved.
+    """
+    new_point = Point3D(
+        x = math.hypot(point.x, point.z) * math.cos(current_camera_angles.pan),
+        y = point.y,
+        z = math.hypot(point.x, point.z) * math.sin(current_camera_angles.pan)
+    )
+    """
+    point = point - gun_in_world_coordinate_camera
+    pan = math.radians(current_camera_angles.pan)
+    tilt = math.radians(current_camera_angles.tilt)
+    
+    new_point = Point3D(
+        x = point.x * math.cos(pan) + point.z * math.sin(pan),
+        y = point.y,
+        z = point.x * -math.sin(pan) + point.z * math.cos(pan)
+    )
+
+    return new_point
+
+def swap_handedness(point):
+    return Point3D(
+        x = point.x,
+        y = point.y,
+        z = -point.z
+    )
 
 def world_coordinate_gun_to_gun_angles(point):
     """
@@ -103,18 +137,26 @@ def world_coordinate_gun_to_gun_angles(point):
         tilt=math.degrees(math.atan2(point.y, math.hypot(point.x, point.z)))
     )
 
-def run_aiming_pipeline(objects):
-    print (objects)
+def run_aiming_pipeline(objects, current_gun_angles):
+    # print (objects)
     target = select_target(objects)
     if target == None:
         return None
 
-    point = image_coordinate_to_world_coordinate_camera(target)
-    point = world_coordinate_camera_to_world_coordinate_gun(point)
-    angles = world_coordinate_gun_to_gun_angles(point)
+    # Camera angles currently are gun pan, but not tilt.
+    current_camera_angles = copy(current_gun_angles)
+    current_camera_angles.tilt += 20
+    # current_camera_angles.pan = 90
 
-    print (point)
-    print (angles)
+    point = image_coordinate_to_world_coordinate_camera(target)
+
+    print ("Current gun angle", current_gun_angles)
+    print ("Coordinate frame of ref of camera", point)
+    point = world_coordinate_camera_to_world_coordinate_base(point, current_camera_angles)
+    print ("Coordinate frame of ref of base", point)
+    angles = world_coordinate_gun_to_gun_angles(point)
+    angles.tilt += 25
+
     return angles
 
 

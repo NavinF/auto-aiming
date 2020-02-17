@@ -21,3 +21,15 @@ python3 -m edgetpuvision.detect_server \
   --model ${TEST_DATA}/mobilenet_ssd_v2_face_quant_postprocess_edgetpu.tflite
 
 18 cm behind. 10cm below.
+
+
+============
+Setting up cron.
+==============
+
+crontab -e
+Add
+@reboot /path/to/script
+
+To run:
+python3 ~/autoturret/detect_server.py
