@@ -9,11 +9,14 @@ def run(objects):
 
     current_gun_angles = motor_interface.get_current_gun_angles()
 
+    #print("profile: got current angles, starting aiming pipe", time.monotonic())
     gun_angles = aiming.run_aiming_pipeline(objects, current_gun_angles)
+    #print("profile: ran aiming pipeline, starting set pan tilt", time.monotonic())
     if not gun_angles:
-        return None
+        return {'fps':update_fps()}
 
     motor_interface.set_pan_tilt(gun_angles)
+    #print("profile: set pan tilt.", time.monotonic())
 
     return {
         'gun_angles': gun_angles,

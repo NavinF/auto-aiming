@@ -29,6 +29,7 @@ def get_serial():
             except:
                 print("Unable to open TTY")
                 ser = -1
+                raise Exception()
                 return None
 
     # Ser is valid, return it.

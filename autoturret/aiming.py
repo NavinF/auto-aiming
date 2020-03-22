@@ -98,7 +98,7 @@ def world_coordinate_camera_to_world_coordinate_base(point, current_camera_angle
     two reference frames 
     """
     gun_in_world_coordinate_camera = Point3D(
-        x=0, y=-0.1, z=0.1
+        x=0, y=0, z=0
     )
     # TODO: look up how to do this when tilt is involved.
     """
@@ -112,20 +112,43 @@ def world_coordinate_camera_to_world_coordinate_base(point, current_camera_angle
     pan = math.radians(current_camera_angles.pan)
     tilt = math.radians(current_camera_angles.tilt)
     
-    new_point = Point3D(
+    """
+        Pan Calc:
+        Original:
+        cos(a)  -sin(a)     0
+        sin(a)  cos(a)      0
+        0       0           1
+        LH-System(swap y,z; negate sin). Our input is already lh-coord.
+        Only sin negated, cuz angles negated. sin(-x)=-sin(x), cos(-x)=cos(x).
+        cos(a)  0       -sin(a)
+        0       1       0
+        -sin(a)  0       cos(a)
+    """
+    point = Point3D(
         x = point.x * math.cos(pan) + point.z * math.sin(pan),
         y = point.y,
         z = point.x * -math.sin(pan) + point.z * math.cos(pan)
     )
-
-    return new_point
-
-def swap_handedness(point):
-    return Point3D(
-        x = point.x,
-        y = point.y,
-        z = -point.z
+    """
+        Tilt Calc:
+        Original:
+        cos(b)  0   sin(b)
+        0       1   0
+        -sin(b) 0   cos(b)
+        LH-System(swap y,z; negate sin). 
+        cos(b)  sin(b)  0
+        -sin(b) cos(b)  0
+        0       0       1
+        Source of original: 
+        https://en.wikipedia.org/wiki/Rotation_matrix#General_rotations
+    """
+    point = Point3D(
+        x = point.x * math.cos(tilt) + point.y * math.sin(tilt),
+        y = point.x * -math.sin(tilt) + point.y * math.cos(tilt),
+        z = point.z
     )
+
+    return point
 
 def world_coordinate_gun_to_gun_angles(point):
     """
@@ -137,6 +160,29 @@ def world_coordinate_gun_to_gun_angles(point):
         tilt=math.degrees(math.atan2(point.y, math.hypot(point.x, point.z)))
     )
 
+def fine_tune(src, target):
+    delta = 10 * math.pow((target - src) / 10, 2)
+    delta = math.copysign(delta, target - src)
+    max_step = abs(target-src)
+    clamped_delta = max(min(delta, max_step), -max_step)
+    return src + clamped_delta
+
+
+def fine_tune_aiming(current_angles, target_angles):
+    tuned_angles = copy(current_angles)
+    tuned_angles.pan = fine_tune(current_angles.pan, target_angles.pan)
+    tuned_angles.tilt = fine_tune(current_angles.tilt, target_angles.tilt)
+    return tuned_angles 
+
+    """
+    if (abs(target_angles-current_angles%360) > 180): # wrap around
+        if target_angles < 0: # eg, 150->-150, needs+60 instead.
+            add = 360 - current_angles + target_angles
+        if target_angles > 0: # eg, -150->150, need-60 instead.
+            add = -(360 + current_angles - target_angles)
+    """
+
+
 def run_aiming_pipeline(objects, current_gun_angles):
     # print (objects)
     target = select_target(objects)
@@ -145,7 +191,7 @@ def run_aiming_pipeline(objects, current_gun_angles):
 
     # Camera angles currently are gun pan, but not tilt.
     current_camera_angles = copy(current_gun_angles)
-    current_camera_angles.tilt += 20
+    # current_camera_angles.tilt += 20
     # current_camera_angles.pan = 90
 
     point = image_coordinate_to_world_coordinate_camera(target)
@@ -155,6 +201,7 @@ def run_aiming_pipeline(objects, current_gun_angles):
     point = world_coordinate_camera_to_world_coordinate_base(point, current_camera_angles)
     print ("Coordinate frame of ref of base", point)
     angles = world_coordinate_gun_to_gun_angles(point)
+    angles = fine_tune_aiming(current_gun_angles, angles)
     angles.tilt += 25
 
     return angles
