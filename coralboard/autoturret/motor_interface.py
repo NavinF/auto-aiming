@@ -52,7 +52,7 @@ def update():
         value = s[1]
         if key == "pan_angle":
             current_gun_angles.pan = float(value)
-            print ("setting pan to", float(value), "string is", value)
+            # print ("setting pan to", float(value), "string is", value)
         elif key == "tilt_angle":
             current_gun_angles.tilt = float(value)
 
