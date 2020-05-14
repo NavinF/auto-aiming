@@ -28,12 +28,11 @@ void Stepper::setPower(float power_normalized) {
 }
 
 void Stepper::setTargetAngle(float angle_in_degrees) {
-  target_step_num_ = (int)nearbyintf(angle_in_degrees * steps_per_degree);
+  target_step_num_ = (int)nearbyintf(-angle_in_degrees * steps_per_degree);
 }
 
 void Stepper::update() {
-  // TODO: should this be target_step_num_ - step_num_ ?
-  int dir = step_num_ + target_step_num_;
+  int dir = step_num_ - target_step_num_;
   if (abs(dir) > 100 && velocity_ < 5)
     velocity_ += 0.02;
   else if((velocity_ > 1) && (abs(dir) < 100))

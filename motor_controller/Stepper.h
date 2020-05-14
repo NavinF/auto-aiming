@@ -27,7 +27,7 @@ class Stepper
 
   float getVelocity() { return velocity_; }
   float getCurrentAngle() { return -step_num_ / steps_per_degree; }
-  float getTargetAngle() { return target_step_num_ / steps_per_degree; }
+  float getTargetAngle() { return -target_step_num_ / steps_per_degree; }
   float getStepNum() { return step_num_; }
   float getNormalizedPower() { return 1.0 * motor_power_ / motor_maxpower; }
   
